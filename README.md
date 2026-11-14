@@ -3,6 +3,7 @@ Simulated enterprise SOC environment using Active Directory, Splunk SIEM, and Sh
 
 <img width="1774" height="887" alt="37466940-7507-473c-925d-506738b7344a" src="https://github.com/user-attachments/assets/255c5c35-5cc3-45e3-931b-631869d91ac6" />
 
+
 # Active Directory 2.0 — SOC Automation & Incident Response
 
 ## Part 1: Project Overview
@@ -18,6 +19,8 @@ The environment consists of **three virtual machines hosted on Vultr**:
 3. **Windows Test Machine:** Simulates a vulnerable endpoint that attackers can target.
 
 ### 🔄 How It Works
+
+The planned security workflow consists of the following steps:
 
 1. An attacker attempts to authenticate to the Windows test machine.
 2. Splunk collects authentication logs and generates a security alert.
@@ -36,29 +39,75 @@ Build a hands-on SOC environment that combines:
 
 ### 📌 Part 1: Current Focus
 
-In this first part, I'm focusing on understanding the project architecture and setting up the infrastructure required for the lab.
+In this first part, I'm focusing on understanding the project architecture and planning the infrastructure required for the lab.
 
-Part 2: Cloud Infrastructure & Network Configuration
-In this part, I focused on configuring the cloud infrastructure, securing remote access, and establishing network connectivity between my virtual machines.
-Step 1: Deploying the Vultr Instances
-I deployed three virtual machines in Vultr's Los Angeles region: a Windows Server for Active Directory, a Windows test machine, and an Ubuntu server for Splunk. Keeping the instances in the same region allowed me to configure private networking between them.
+---
 
-Step 2: Configuring Firewall Rules
-I created a Vultr firewall group and restricted inbound SSH (port 22) and RDP (port 3389) access to my public IP address. All other inbound traffic was blocked by default. I also configured the firewall group on my Windows instances.
+## Part 2: Cloud Infrastructure & Network Configuration
 
+In this part, I focused on deploying the cloud infrastructure, securing remote access, and establishing network connectivity between my virtual machines.
 
+### Step 1: Deploying the Vultr Instances
 
-Step 3: Connecting to the Windows Servers
-I used Remote Desktop Protocol (RDP) to connect to the Windows virtual machines and begin configuring their network settings.
+I deployed three virtual machines in Vultr's Los Angeles region:
 
-Step 4: Configuring Private Networking
-I enabled Vultr's Virtual Private Cloud (VPC) networking so the servers could communicate over private IP addresses rather than relying on their public interfaces. I reviewed the VPC network configuration and configured the secondary network adapter on the Windows machines with static IP settings matching the private subnet.
+- **Windows Server 2025:** Planned Active Directory Domain Controller
+- **Windows Server 2022 Core:** Windows Test Machine
+- **Ubuntu Server 22.04:** Splunk SIEM Server
 
+Keeping all three servers in the same region allowed me to configure private networking between them.
 
+![Vultr Instances](images/01_vultr-instances.png)
 
-Step 5: Troubleshooting and Verifying Connectivity
-My initial ping tests between the Ubuntu Splunk server and the Windows machines failed. After correcting the private network configuration, I repeated the tests and successfully received replies from the Windows servers over their private IP addresses.
+### Step 2: Configuring Firewall Rules
 
+I created a Vultr firewall group to secure the environment and restrict unauthorized remote access.
 
-Part 2 Result
-By the end of this phase, I had deployed the three cloud servers, configured restricted remote access, established private networking, and verified connectivity. The infrastructure is ready for the next phase: installing Active Directory Domain Services and promoting the Windows Server to a domain controller.
+- Allowed **SSH (Port 22)** from my public IP address.
+- Allowed **RDP (Port 3389)** from my public IP address.
+- Blocked all other inbound traffic by default.
+- Applied the firewall group to my Windows instances.
+
+![Firewall Configuration](images/02_firewall-rules.png)
+
+![Domain Controller Firewall](images/04_domain-controller-firewall.png)
+
+![Test Machine Firewall](images/06_test-machine-firewall.png)
+
+### Step 3: Connecting to the Windows Servers
+
+I used Remote Desktop Protocol (RDP) to remotely access my Windows servers and begin configuring their network settings.
+
+![Windows Remote Desktop](images/03_windows-rdp.png)
+
+### Step 4: Configuring Private Networking
+
+I configured Vultr's **Virtual Private Cloud (VPC)** networking to allow the virtual machines to communicate through private IP addresses.
+
+I also manually configured static IP addresses on the secondary network adapters of my Windows servers to match the VPC subnet.
+
+![VPC Network Configuration](images/05_vpc-network.png)
+
+![Windows Static IP Configuration](images/08_windows-static-ip.png)
+
+![Splunk Network Configuration](images/07_splunk-network.png)
+
+### Step 5: Troubleshooting Network Connectivity
+
+During testing, I initially encountered connectivity issues when attempting to ping the Windows servers from my Ubuntu Splunk server.
+
+After troubleshooting and correcting the private network configuration, I successfully established communication between the servers.
+
+![Initial Connectivity Troubleshooting](images/09_connectivity-troubleshooting.png)
+
+![Successful Connectivity Test](images/10_connectivity-success.png)
+
+### ✅ Part 2: Results
+
+By the end of this phase, I successfully:
+
+- Deployed three virtual machines on Vultr.
+- Configured firewall rules to restrict remote access.
+- Established private VPC networking.
+- Configured static IP addresses.
+- Verified network connectivity between the servers.

@@ -37,3 +37,28 @@ Build a hands-on SOC environment that combines:
 ### 📌 Part 1: Current Focus
 
 In this first part, I'm focusing on understanding the project architecture and setting up the infrastructure required for the lab.
+
+Part 2: Cloud Infrastructure & Network Configuration
+In this part, I focused on configuring the cloud infrastructure, securing remote access, and establishing network connectivity between my virtual machines.
+Step 1: Deploying the Vultr Instances
+I deployed three virtual machines in Vultr's Los Angeles region: a Windows Server for Active Directory, a Windows test machine, and an Ubuntu server for Splunk. Keeping the instances in the same region allowed me to configure private networking between them.
+
+Step 2: Configuring Firewall Rules
+I created a Vultr firewall group and restricted inbound SSH (port 22) and RDP (port 3389) access to my public IP address. All other inbound traffic was blocked by default. I also configured the firewall group on my Windows instances.
+
+
+
+Step 3: Connecting to the Windows Servers
+I used Remote Desktop Protocol (RDP) to connect to the Windows virtual machines and begin configuring their network settings.
+
+Step 4: Configuring Private Networking
+I enabled Vultr's Virtual Private Cloud (VPC) networking so the servers could communicate over private IP addresses rather than relying on their public interfaces. I reviewed the VPC network configuration and configured the secondary network adapter on the Windows machines with static IP settings matching the private subnet.
+
+
+
+Step 5: Troubleshooting and Verifying Connectivity
+My initial ping tests between the Ubuntu Splunk server and the Windows machines failed. After correcting the private network configuration, I repeated the tests and successfully received replies from the Windows servers over their private IP addresses.
+
+
+Part 2 Result
+By the end of this phase, I had deployed the three cloud servers, configured restricted remote access, established private networking, and verified connectivity. The infrastructure is ready for the next phase: installing Active Directory Domain Services and promoting the Windows Server to a domain controller.

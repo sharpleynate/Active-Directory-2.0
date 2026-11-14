@@ -21,9 +21,9 @@ The environment consists of three virtual machines hosted on Vultr:
 
 | Virtual Machine | Operating System | Purpose |
 |---|---|---|
-| Domain Controller | Windows Server 2025 | Manages Active Directory users, accounts, and authentication |
+| Domain Controller | Windows Server 2022 | Manages Active Directory users, accounts, and authentication |
 | Splunk Server | Ubuntu Server 22.04 | Collects and analyzes security logs |
-| Test Machine | Windows Server 2022 Core | Simulates an endpoint targeted by attackers |
+| Test Machine | Windows Server 2022 | Simulates an endpoint targeted by attackers |
 
 ### 🔄 Planned Security Workflow
 
@@ -69,8 +69,8 @@ I started by deploying three virtual machines in Vultr's **Los Angeles region**.
 
 Each server was assigned a specific role within the environment:
 
-- **Windows Server 2025:** Future Active Directory Domain Controller
-- **Windows Server 2022 Core:** Windows Test Machine
+- **Windows Server 2022:** Future Active Directory Domain Controller
+- **Windows Server 2022:** Windows Test Machine
 - **Ubuntu Server 22.04:** Future Splunk SIEM Server
 
 Deploying the servers in the same region allowed me to configure private network communication between them.
@@ -79,7 +79,7 @@ Deploying the servers in the same region allowed me to configure private network
 
 ### Step 2: Configuring Firewall Security
 
-After deploying the servers, I created a Vultr firewall group named `sharp-AD-Project-2.0` to restrict inbound network traffic.
+After deploying the servers, I created a Vultr firewall group to restrict inbound network traffic.
 
 I configured the following rules:
 

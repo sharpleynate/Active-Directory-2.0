@@ -3,7 +3,7 @@
 
 A hands-on cybersecurity project focused on building a simulated enterprise SOC environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection and automated incident response.
 
-![SOC Architecture Diagram](https://github.com/user-attachments/assets/255c5c35-5cc3-45e3-931b-631869d91ac6)
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/27d698bd-e8c9-496e-b7ec-db51e0abfcf7" />
 
 ---
 

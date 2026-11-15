@@ -238,3 +238,260 @@ During this phase, I:
 - Reviewed the Windows test machine's computer and domain settings.
 - Investigated a domain-user Remote Desktop authorization error.
 - Configured the domain user selection for Remote Desktop access.
+
+---
+
+## Part 4: Splunk SIEM Deployment & Windows Event Log Integration
+
+### Overview
+
+In this phase, I deployed Splunk Enterprise on the Ubuntu server, configured the Windows endpoints to forward security events, and verified that logs from the lab were searchable in a centralized SIEM.
+
+I also troubleshot an incorrect forwarding destination on the Domain Controller. During the Universal Forwarder setup, I initially entered the Domain Controller's VPC address instead of the Splunk server's private IP address. After correcting the destination and restarting the forwarder, I verified ingestion from both Windows hosts.
+
+### Step 1: Preparing the Ubuntu Splunk Server
+
+I accessed the Ubuntu-based Splunk server and prepared the operating system for installation. I created a simple Bash script for package maintenance:
+
+```bash
+#!/bin/bash
+sudo apt update -y && sudo apt upgrade -y
+```
+
+The screenshot shows the script contents; it does not independently confirm its execution.
+
+![Ubuntu update and upgrade script](18_ubuntu-update-script.png)
+
+### Step 2: Downloading and Installing Splunk Enterprise
+
+I downloaded the Splunk Enterprise 10.6.1 Debian package from Splunk's official download server using `wget`.
+
+![Downloading Splunk Enterprise Debian package](17_splunk-enterprise-download.png)
+
+The installation workflow used the downloaded `.deb` package with `dpkg`, followed by management of the Splunk installation under `/opt/splunk/bin`.
+
+```bash
+sudo dpkg -i splunk-10.6.1.1-b2ae2962645c-linux-amd64.deb
+sudo /opt/splunk/bin/splunk start --accept-license
+```
+
+The following screenshot shows the Splunk executable directory, providing evidence of the installation files. The later web interface screenshots confirm Splunk Enterprise was running.
+
+![Splunk installation directory](19_splunk-installation-files.png)
+
+### Step 3: Configuring Splunk Web Access on Port 8000
+
+Splunk Web uses TCP port **8000** by default. I worked on configuring access through both the Vultr cloud firewall and the Ubuntu host firewall.
+
+The Vultr screenshot shows a proposed inbound TCP rule for port 8000. The source field was not accepted in that screenshot, so it does not prove that the cloud rule was saved.
+
+![Vultr firewall configuration for TCP port 8000](20_vultr-web-port-rule.png)
+
+On Ubuntu, I added a local UFW rule:
+
+```bash
+sudo ufw allow 8000
+```
+
+The terminal confirmed that IPv4 and IPv6 rules were added. For a hardened deployment, access to the web interface should be restricted to a trusted administrative IP rather than the entire internet.
+
+![UFW rule added for Splunk Web port 8000](21_splunk-web-firewall.png)
+
+### Step 4: Configuring the Splunk Web Interface
+
+After accessing Splunk Enterprise, I reviewed the administrator preferences and selected the GMT time zone for the Splunk user interface.
+
+![Splunk Enterprise administrator preferences](22_splunk-web-preferences.png)
+
+I also verified that the **Splunk Add-on for Microsoft Windows** was installed. This add-on provides Windows-specific field extraction and event normalization capabilities.
+
+![Splunk Add-on for Microsoft Windows installed](23_windows-addon-installed.png)
+
+### Step 5: Enabling Forwarder Receiving on Port 9997
+
+To accept data from Windows Universal Forwarders, I configured Splunk's receiving port as **9997/TCP**.
+
+![Splunk receiving port configuration](24_splunk-receiving-port.png)
+
+I also added the corresponding local Ubuntu firewall rule:
+
+```bash
+sudo ufw allow 9997
+```
+
+The terminal confirmed that the rule was added. In a production environment, I would restrict this port to the Windows endpoints' private IP addresses.
+
+![UFW rule added for TCP port 9997](31_splunk-9997-firewall.png)
+
+### Step 6: Installing the Splunk Universal Forwarder on Windows
+
+I installed the **Splunk Universal Forwarder** on the Windows lab environment to collect Windows event logs and send them to the central Splunk instance.
+
+The installation screenshot shows the setup process on a Windows endpoint.
+
+![Splunk Universal Forwarder installation on Windows](25_universal-forwarder-installation.png)
+
+The forwarder stores local configuration files in:
+
+```text
+C:\Program Files\SplunkUniversalForwarder\etc\system\local\
+```
+
+![Universal Forwarder local configuration directory](26_forwarder-configuration-directory.png)
+
+### Step 7: Configuring Windows Security Log Collection
+
+I configured an `inputs.conf` file to collect the Windows Security event log and associate it with my custom index, **`sharp-ad`**.
+
+```ini
+[WinEventLog://Security]
+index = sharp-ad
+disabled = false
+```
+
+![Windows Security event log input configuration](27_forwarder-security-input.png)
+
+This configuration targets authentication and other security-related events recorded in the Windows Security log.
+
+### Step 8: Reviewing the Forwarder Service Account
+
+I opened Windows Services and reviewed the **SplunkForwarder** service's Log On configuration. The screenshot shows the account `NT SERVICE\SplunkForwarder` selected.
+
+![SplunkForwarder service Log On configuration](28_forwarder-service-account.png)
+
+The account used by the service must have sufficient permissions to read the event logs being collected. The screenshot documents the service settings, not a confirmed change to Local System.
+
+### Step 9: Investigating Missing Events
+
+I searched the custom index using:
+
+```spl
+index=sharp-ad
+```
+
+Initially, the search returned **0 events**, showing that the pipeline was not yet producing searchable data in the selected time range.
+
+![Initial Splunk search returning zero events](29_initial-zero-events.png)
+
+After further configuration, the same index began returning results. A subsequent screenshot showed **1,054 events**, including Windows Security event codes such as 4634, 4672, 4624, and 4648.
+
+![First successful Splunk event ingestion](30_first-ingested-events.png)
+
+### Step 10: Correcting the Domain Controller's Forwarding Destination
+
+While configuring the Universal Forwarder on my Domain Controller, I made a networking mistake: I entered the **Domain Controller's own VPC IP address** as the destination instead of the **Splunk server's private IP address**.
+
+The Universal Forwarder must send event data to the Splunk receiving server, not back to the Windows machine generating the events.
+
+The setup screenshot shows the Domain Controller forwarder configuration and a private address entered in the optional **Deployment Server** field.
+
+![Domain Controller Universal Forwarder setup](32_domain-controller-forwarder-setup.png)
+
+**Important distinction:** A deployment server on port 8089 is not the same as an indexer receiving forwarded events on port 9997. Since this lab used a receiving Splunk server, I needed to verify the forwarding destination in `outputs.conf`, rather than rely on the optional deployment-server field.
+
+The corrected forwarding target should follow this structure:
+
+```ini
+[tcpout]
+defaultGroup = primary_indexers
+
+[tcpout:primary_indexers]
+server = <SPLUNK_PRIVATE_IP>:9997
+```
+
+After correcting the destination, I restarted the SplunkForwarder service so the updated configuration could take effect. The exact correction command is not visible in the supplied screenshots, so I have not represented one as an executed command.
+
+I also reviewed the Domain Controller's local forwarder configuration files, including `inputs.conf`.
+
+![Domain Controller Universal Forwarder configuration files](33_domain-controller-inputs-conf.png)
+
+### Step 11: Verifying Events from Both Windows Hosts
+
+I repeated the Splunk search:
+
+```spl
+index=sharp-ad
+```
+
+The search returned **1,208 events**. More importantly, the host field contained **two distinct sources**:
+
+| Host | Events | Share |
+|---|---:|---:|
+| `vultr-guest` | 1,080 | 89.404% |
+| `sharp-ADDC01` | 128 | 10.596% |
+
+This confirmed that events from both Windows hosts were being indexed in Splunk.
+
+![Splunk search showing events from both Windows hosts](34_both-hosts-verified.png)
+
+### Step 12: Researching Windows Authentication Events
+
+With telemetry arriving, I began reviewing Windows Security Event ID **4624**, which records successful logon activity.
+
+![Windows Security Event ID 4624 reference](35_event-4624-reference.png)
+
+I also reviewed Windows logon types to distinguish interactive, network, and remote sessions.
+
+![Windows security logon type reference table](36_windows-logon-types.png)
+
+Relevant logon types include:
+
+- **2 — Interactive:** Local keyboard or console sign-in.
+- **3 — Network:** Network-based access to a resource.
+- **7 — Unlock:** Unlocking a previously locked session.
+- **10 — RemoteInteractive:** Remote Desktop or Terminal Services sign-in.
+
+For RDP detection, **Logon Type 10** is the primary type to investigate. Type 7 represents an unlock, not a general network logon.
+
+A starting search for successful RDP logons is:
+
+```spl
+index=sharp-ad EventCode=4624 Logon_Type=10
+```
+
+Depending on how the Windows events are parsed, the logon-type field may need to be adjusted to the field name present in the indexed data.
+
+### Step 13: Filtering Successful Authentication Events
+
+After reviewing Windows logon types, I searched the `sharp-ad` index for successful authentication events using Event ID **4624**:
+
+```spl
+index=sharp-ad EventCode=4624
+```
+
+The search returned **259 events** across the monitored Windows systems, confirming that successful authentication activity was available for investigation.
+
+![Splunk Event ID 4624 search returning 259 events](37_successful-logon-events.png)
+
+I then examined the details of an individual event associated with the `jsmith` account. The event showed **Logon Type 7**, indicating a workstation unlock rather than a new RDP session. This helped me distinguish authentication event categories before developing detection logic.
+
+![Windows Security event showing jsmith and Logon Type 7](38_logon-type-7-event-details.png)
+
+Next, I narrowed the search to successful authentication events with logon types **7 or 10**:
+
+```spl
+index=sharp-ad EventCode=4624 (Logon_Type=7 OR Logon_Type=10)
+```
+
+The refined query returned **9 events**, reducing the dataset to workstation unlocks and remote interactive logons for closer examination.
+
+![Splunk search filtering successful logons by types 7 and 10](39_filtered-logon-type-events.png)
+
+**Detection note:** Logon Type 7 represents a workstation unlock, while **Logon Type 10** represents RemoteInteractive access such as RDP. The next detection iteration will focus specifically on Type 10 and evaluate source IP addresses against approved administrative access patterns. The filtered results are not, by themselves, evidence of unauthorized access.
+
+### Part 4: Results
+
+During this phase, I:
+
+- Downloaded and deployed Splunk Enterprise on Ubuntu.
+- Configured local firewall access for Splunk Web and forwarder receiving.
+- Accessed the Splunk Enterprise web interface.
+- Verified installation of the Splunk Add-on for Microsoft Windows.
+- Configured TCP port 9997 for forwarder ingestion.
+- Installed and configured Windows Universal Forwarders.
+- Configured Windows Security event log collection using `inputs.conf`.
+- Troubleshot an incorrect Domain Controller forwarding destination.
+- Verified successful ingestion into the `sharp-ad` index.
+- Confirmed that both Windows hosts appeared in Splunk search results.
+- Investigated Event ID 4624 and Windows logon types.
+- Reduced 259 successful-logon events to 9 events matching logon types 7 or 10.

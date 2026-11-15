@@ -148,3 +148,110 @@ By the end of this phase, I had:
 3. Configure the domain and DNS.
 4. Join the Windows test machine to the domain.
 5. Prepare Windows security event collection for Splunk.
+
+
+---
+
+## Part 3: Active Directory Deployment & Remote Access Configuration
+
+### Overview
+
+In this phase, I configured Active Directory Domain Services (AD DS), established a new Active Directory forest, and began integrating the Windows test machine into the domain environment.
+
+I also investigated a Remote Desktop authentication issue involving a domain user account and configured the appropriate remote access permissions.
+
+### Step 1: Installing Active Directory Domain Services
+
+I accessed the Windows Server through the Vultr console and opened Server Manager.
+
+Using the **Add Roles and Features Wizard**, I selected the **Active Directory Domain Services (AD DS)** server role.
+
+AD DS provides centralized identity management, authentication, and access control for Windows domain environments.
+
+![Active Directory Domain Services role selected in Server Manager](11_ad-ds-role-installation.png)
+
+### Step 2: Promoting the Server to a Domain Controller
+
+After installing the AD DS role, I launched the Active Directory Domain Services Configuration Wizard.
+
+Because this was a new environment, I selected **Add a new forest** and configured the following root domain:
+
+- **Root domain:** `sharp.local`
+- **Deployment type:** New Active Directory forest
+- **Server role:** Domain Controller
+
+This establishes the foundation for centralized authentication and domain management.
+
+![New Active Directory forest configuration using sharp.local](12_new-forest-sharp-local.png)
+
+### Step 3: Verifying the Active Directory Domain
+
+After the domain configuration, I opened **Active Directory Users and Computers (ADUC)** to verify that the new domain was available.
+
+The console displayed `sharp.local` and its default Active Directory containers, including:
+
+- Builtin
+- Computers
+- Domain Controllers
+- ForeignSecurityPrincipals
+- Managed Service Accounts
+- Users
+
+This confirmed that the Active Directory domain was accessible through the management console.
+
+![Active Directory Users and Computers showing sharp.local](13_active-directory-domain.png)
+
+### Step 4: Preparing the Windows Test Machine
+
+Next, I accessed the Windows test machine to prepare it for integration with the Active Directory environment.
+
+I opened **System Properties** to review its computer name and current workgroup membership.
+
+The screenshot captures the machine before its domain membership was verified.
+
+For domain integration, the test machine must use DNS capable of resolving the `sharp.local` Active Directory domain, typically through the Domain Controller's DNS service.
+
+![Windows test machine computer name and workgroup settings](14_test-machine-system-properties.png)
+
+### Step 5: Troubleshooting Remote Desktop Authentication
+
+While attempting to connect to the Windows test machine using the domain user account `SHARP\JSmith`, I encountered the following error:
+
+> The connection was denied because the user account is not authorized for remote login.
+
+This indicated that the attempted account did not have the necessary Remote Desktop logon authorization on the target system.
+
+The error was related to remote logon permissions rather than establishing that the account password was incorrect.
+
+![Remote Desktop connection denied for domain user](15_rdp-authorization-error.png)
+
+### Step 6: Configuring Remote Desktop User Permissions
+
+To address the authorization issue, I opened the Windows **System Properties** Remote settings and accessed the **Remote Desktop Users** configuration.
+
+From the domain location `sharp.local`, I selected the account **Jenny Smith (`JSmith`)** for inclusion in the permitted Remote Desktop users.
+
+This step was intended to grant the domain account permission to establish an RDP session on the test machine.
+
+![Selecting Jenny Smith for Remote Desktop access](16_remote-desktop-user-permissions.png)
+
+The screenshot documents the user selection process. A successful login test is still needed to confirm that the permission change took effect.
+
+### Part 3: Results
+
+During this phase, I:
+
+- Selected and installed the Active Directory Domain Services role.
+- Configured a new Active Directory forest named `sharp.local`.
+- Verified the domain through Active Directory Users and Computers.
+- Reviewed the Windows test machine's computer and domain settings.
+- Investigated a domain-user Remote Desktop authorization error.
+- Configured the domain user selection for Remote Desktop access.
+
+### Next Steps
+
+1. Verify the Windows test machine is successfully joined to `sharp.local`.
+2. Confirm that the `JSmith` account can authenticate through Remote Desktop.
+3. Verify DNS resolution and domain connectivity.
+4. Configure Windows security event logging.
+5. Begin preparing the Splunk SIEM integration.

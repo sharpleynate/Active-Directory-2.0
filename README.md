@@ -141,15 +141,6 @@ By the end of this phase, I had:
 - Troubleshot failed ICMP connectivity tests.
 - Verified successful ICMP replies to two Windows private IP addresses from Ubuntu.
 
-### Next Steps
-
-1. Install and configure Active Directory Domain Services.
-2. Promote the Windows Server to a Domain Controller.
-3. Configure the domain and DNS.
-4. Join the Windows test machine to the domain.
-5. Prepare Windows security event collection for Splunk.
-
-
 ---
 
 ## Part 3: Active Directory Deployment & Remote Access Configuration
@@ -247,11 +238,3 @@ During this phase, I:
 - Reviewed the Windows test machine's computer and domain settings.
 - Investigated a domain-user Remote Desktop authorization error.
 - Configured the domain user selection for Remote Desktop access.
-
-### Next Steps
-
-1. Verify the Windows test machine is successfully joined to `sharp.local`.
-2. Confirm that the `JSmith` account can authenticate through Remote Desktop.
-3. Verify DNS resolution and domain connectivity.
-4. Configure Windows security event logging.
-5. Begin preparing the Splunk SIEM integration.

@@ -1,6 +1,7 @@
+
 # Active Directory 2.0 — SOC Automation & Incident Response
 
-A hands-on cybersecurity project focused on building a simulated enterprise Security Operations Center (SOC) environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection and automated incident response.
+A hands-on cybersecurity project focused on building a simulated enterprise SOC environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection and automated incident response.
 
 ![SOC Automation Architecture](https://github.com/user-attachments/assets/27d698bd-e8c9-496e-b7ec-db51e0abfcf7)
 
@@ -20,9 +21,9 @@ The environment consists of three virtual machines hosted on Vultr:
 
 | Virtual Machine | Operating System | Purpose |
 |---|---|---|
-| Domain Controller (`sharp-ADDC01`) | Windows Server 2025 Standard | Active Directory and authentication management |
-| Splunk Server (`sharp-Splunk`) | Ubuntu Server 22.04 | Security log collection and analysis |
-| Test Machine | Windows Server 2022 Core | Simulated endpoint for attack testing |
+| Domain Controller (`sharp-ADDC01`) | Windows Server 2025 Standard | Planned Active Directory users, accounts, and authentication management |
+| Splunk Server (`sharp-Splunk`) | Ubuntu Server 22.04 | Planned security log collection and analysis |
+| Test Machine | Windows Server 2022 Core | Simulated endpoint for testing |
 
 ### 🔄 Planned Security Workflow
 
@@ -58,143 +59,92 @@ The next phase involves deploying and configuring the infrastructure needed to s
 
 ### Overview
 
-In this phase, I deployed virtual machines on Vultr, configured firewall rules to restrict remote access, established private networking, and troubleshot connectivity issues between the servers.
+In this phase, I deployed virtual machines on Vultr, configured firewall rules for remote access, established private networking, and troubleshot connectivity issues between the servers.
 
 The objective was to prepare a functioning cloud environment before configuring Active Directory and integrating the security monitoring tools.
 
 ### Step 1: Deploying the Virtual Machines
 
-I started by deploying three virtual machines in Vultr's **Los Angeles region**.
+I deployed three virtual machines in Vultr's **Los Angeles region**:
 
-Each server was assigned a specific role within the environment:
-
-- **Windows Server 2025 Standard (`sharp-ADDC01`):** Future Active Directory Domain Controller
+- **Windows Server 2025 Standard:** Future Active Directory Domain Controller (`sharp-ADDC01`)
 - **Windows Server 2022 Core:** Windows Test Machine
-- **Ubuntu Server 22.04 (`sharp-Splunk`):** Future Splunk SIEM Server
+- **Ubuntu Server 22.04:** Future Splunk SIEM Server (`sharp-Splunk`)
 
-Deploying the servers in the same region allowed me to configure private network communication between them.
+The instance dashboard shows all three machines and their operating systems. It also captures their running or stopped status at that point in the deployment.
 
-The Vultr instance dashboard shows the three deployed servers, their operating systems, and their instance statuses at the time of the screenshot.
-
-![Vultr Instances](01_vultr-instances.png)
+![Vultr instance list showing three deployed servers](01_vultr-instances.png)
 
 ### Step 2: Configuring Firewall Security
 
-After deploying the servers, I created a Vultr firewall group named `sharp-AD-Project-2.0` to restrict inbound network traffic.
+I created a Vultr firewall group named `sharp-AD-Project-2.0` to restrict administrative access. The configured inbound rules shown in the screenshot allow SSH (port 22) and RDP (port 3389) from a specified `/32` public IP, with a default deny rule for other inbound traffic.
 
-I configured the following rules:
+![Vultr firewall group inbound rules](02_firewall-rules.png)
 
-- **SSH (Port 22):** Allowed administrative access from my designated public IP address.
-- **RDP (Port 3389):** Allowed Remote Desktop connections from my designated public IP address.
-- **Default Deny:** Blocked other inbound traffic not explicitly permitted.
+I then checked the firewall group selection on the intended Domain Controller instance.
 
-Restricting administrative access to a specific source IP helped reduce unnecessary exposure to external connections.
+![Domain Controller firewall group selection](03_windows-rdp.png)
 
-The firewall configuration screenshot shows the inbound rules and their permitted source addresses.
+I also reviewed the firewall group selection on the Windows test machine.
 
-![Firewall Rules](02_firewall-rules.png)
+![Test Machine firewall group selection](06_test-machine-firewall.png)
 
-#### Applying the Firewall to the Domain Controller
-
-I assigned the firewall group to the Windows Server instance intended to serve as the Active Directory Domain Controller.
-
-![Domain Controller Firewall](04_domain-controller-firewall.png)
-
-#### Reviewing the Test Machine Firewall Configuration
-
-I also reviewed the firewall configuration for the Windows test machine to ensure remote administration would be restricted appropriately.
-
-![Test Machine Firewall](06_test-machine-firewall.png)
+**Note:** The firewall rule screenshot shows **zero attached instances** at that moment, while the instance settings screenshots show firewall groups selected. These screenshots document configuration steps at different times; they do not, by themselves, prove the rules were active on both machines simultaneously.
 
 ### Step 3: Establishing Remote Access
 
-After configuring the firewall rules, I connected to the Windows servers using **Remote Desktop Protocol (RDP)**.
+I accessed the Windows server through Remote Desktop Protocol (RDP) to perform configuration directly inside the operating system.
 
-Remote access allowed me to manage the Windows environments, inspect their network adapters, and configure networking without relying exclusively on the Vultr web console.
+The following screenshot shows the established Windows desktop session.
 
-The screenshot below documents an established Windows Remote Desktop session.
-
-![Windows Remote Desktop](03_windows-rdp.png)
+![Windows Remote Desktop session](04_domain-controller-firewall.png)
 
 ### Step 4: Configuring Private VPC Networking
 
-Next, I configured Vultr's **Virtual Private Cloud (VPC)** networking to allow the virtual machines to communicate through private IP addresses rather than relying on their public interfaces.
+I configured a Vultr VPC connection for internal communication between the servers, reducing the need to use public IP addresses for server-to-server traffic.
 
-The objective was to establish an internal network for future Active Directory communication, Windows event collection, and Splunk monitoring.
+The Windows instance's VPC settings show its assigned private address and network details.
 
-#### Verifying the VPC Assignment
+![Windows server VPC network assignment](05_vpc-network.png)
 
-I reviewed the VPC configuration on the Windows server and confirmed that the instance had a private network interface assigned.
+I also checked the Ubuntu server's public IPv4 configuration while reviewing its network connectivity. **This screenshot shows its public network settings, not its VPC address.**
 
-![VPC Network Configuration](05_vpc-network.png)
+![Ubuntu Splunk server public IPv4 configuration](07_splunk-network.png)
 
-#### Reviewing the Splunk Server Network Configuration
+On the Windows test machine, I opened the secondary adapter's IPv4 properties and manually entered a private address and subnet mask for the VPC network.
 
-I also reviewed the Ubuntu server's network settings to verify its configuration before testing communication with the Windows servers.
-
-![Splunk Network Configuration](07_splunk-network.png)
-
-#### Configuring Static IPv4 Addresses
-
-On the Windows servers, I configured static IPv4 addresses on the secondary network adapters associated with the private network.
-
-This was intended to provide predictable addressing for communication between the Domain Controller, test machine, and Splunk server.
-
-The screenshot below shows the Windows IPv4 properties used during configuration.
-
-![Windows Static IP Configuration](08_windows-static-ip.png)
+![Windows secondary adapter static IPv4 settings](08_windows-static-ip.png)
 
 ### Step 5: Troubleshooting Network Connectivity
 
-After configuring private networking, I tested connectivity between the Ubuntu server and the Windows servers using the `ping` command.
+I tested connectivity from the Ubuntu server using `ping`. The initial attempts to reach the Windows test machine's private address returned **Destination Host Unreachable** messages. A separate public-address test also showed packet loss.
 
-#### Initial Connectivity Issues
+After adjusting the network configuration, the same terminal session showed successful ICMP replies from the previously unreachable private address.
 
-During testing, some connection attempts failed with **Destination Host Unreachable** messages and packet loss.
+![Initial failed tests followed by successful connectivity](09_connectivity-troubleshooting.png)
 
-This indicated that the targeted systems were not consistently reachable through the network configuration being tested.
+I then ran another ping test to the other Windows server's private address and received successful ICMP replies.
 
-The screenshot below documents the unsuccessful attempts alongside subsequent troubleshooting tests.
+![Successful private IP ping from Ubuntu](10_connectivity-success.png)
 
-![Initial Connectivity Troubleshooting](09_connectivity-troubleshooting.png)
-
-#### Verifying Successful Connectivity
-
-After reviewing and adjusting the network configuration, I repeated the connectivity tests.
-
-The Ubuntu server successfully received ICMP replies from the Windows servers using their private IP addresses.
-
-The successful test shown below demonstrates that the target responded to ICMP traffic over the configured private network.
-
-![Successful Connectivity Test](10_connectivity-success.png)
-
-These results confirmed basic network reachability, providing a foundation for future Active Directory and security monitoring integrations.
+These tests confirmed basic ICMP reachability to the two private targets shown. Additional service-level checks will be needed when Active Directory and Splunk are configured.
 
 ### ✅ Part 2: Results
 
 By the end of this phase, I had:
 
-- Deployed three virtual machines in Vultr's Los Angeles region.
-- Created firewall rules to restrict administrative access.
-- Established remote access to the Windows environment.
-- Configured private VPC networking.
-- Assigned static private IP addresses to Windows network interfaces.
-- Investigated and corrected network connectivity issues.
-- Verified successful ICMP communication between the Ubuntu server and Windows systems.
+- Deployed three Vultr instances in the Los Angeles region.
+- Created firewall rules limiting SSH and RDP access to a specified source IP.
+- Accessed a Windows server through RDP.
+- Attached and configured private VPC networking on the Windows environment.
+- Configured a static private IPv4 address on a Windows network adapter.
+- Troubleshot failed ICMP connectivity tests.
+- Verified successful ICMP replies to two Windows private IP addresses from Ubuntu.
 
 ### Next Steps
 
-With the initial cloud infrastructure and networking configured, the next phase will focus on establishing Active Directory services and preparing the environment for security event collection.
-
-Planned tasks include:
-
-1. Installing and configuring Active Directory Domain Services.
-2. Promoting the Windows Server to a Domain Controller.
-3. Configuring the Active Directory domain and DNS.
-4. Joining the Windows test machine to the domain.
-5. Preparing Windows security event collection for Splunk.
-
----
-
-**Project:** Active Directory 2.0 — SOC Automation & Incident Response  
-**GitHub:** [sharpleynate/Active-Directory-2.0](https://github.com/sharpleynate/Active-Directory-2.0)
+1. Install and configure Active Directory Domain Services.
+2. Promote the Windows Server to a Domain Controller.
+3. Configure the domain and DNS.
+4. Join the Windows test machine to the domain.
+5. Prepare Windows security event collection for Splunk.

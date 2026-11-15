@@ -361,7 +361,7 @@ I opened Windows Services and reviewed the **SplunkForwarder** service's Log On 
 
 The account used by the service must have sufficient permissions to read the event logs being collected. The screenshot documents the service settings, not a confirmed change to Local System.
 
-### Step 9: Investigating Missing Events
+### Step 9: Investigating Initial Missing Events
 
 I searched the custom index using:
 
@@ -373,23 +373,23 @@ Initially, the search returned **0 events**, showing that the pipeline was not y
 
 ![Initial Splunk search returning zero events](29_initial-zero-events.png)
 
-After further configuration, the same index began returning results. A subsequent screenshot showed **1,054 events**, including Windows Security event codes such as 4634, 4672, 4624, and 4648.
+After the initial endpoint configuration, the same index began returning results. A subsequent screenshot showed **1,054 events**, including Windows Security event codes such as 4634, 4672, 4624, and 4648. This confirmed ingestion had started, but did not yet prove both endpoints were reporting.
 
 ![First successful Splunk event ingestion](30_first-ingested-events.png)
 
-### Step 10: Correcting the Domain Controller's Forwarding Destination
+### Step 10: Troubleshooting the Domain Controller Forwarder Destination
 
 While configuring the Universal Forwarder on my Domain Controller, I made a networking mistake: I entered the **Domain Controller's own VPC IP address** as the destination instead of the **Splunk server's private IP address**.
 
 The Universal Forwarder must send event data to the Splunk receiving server, not back to the Windows machine generating the events.
 
-The setup screenshot shows the Domain Controller forwarder configuration and a private address entered in the optional **Deployment Server** field.
+The setup screenshot shows the **optional Deployment Server** screen with `10.5.96.4` entered. This screenshot does **not** show the event forwarding destination. The Deployment Server field is used for centralized forwarder management (typically port 8089), whereas event forwarding uses the receiving endpoint on port 9997. I initially confused the target addresses during setup, then checked the actual Splunk receiving destination.
 
 ![Domain Controller Universal Forwarder setup](32_domain-controller-forwarder-setup.png)
 
 **Important distinction:** A deployment server on port 8089 is not the same as an indexer receiving forwarded events on port 9997. Since this lab used a receiving Splunk server, I needed to verify the forwarding destination in `outputs.conf`, rather than rely on the optional deployment-server field.
 
-The corrected forwarding target should follow this structure:
+The forwarding destination belongs in `outputs.conf` and should follow this structure (illustrative configuration, not a screenshot of the exact edited file):
 
 ```ini
 [tcpout]
@@ -399,9 +399,11 @@ defaultGroup = primary_indexers
 server = <SPLUNK_PRIVATE_IP>:9997
 ```
 
-After correcting the destination, I restarted the SplunkForwarder service so the updated configuration could take effect. The exact correction command is not visible in the supplied screenshots, so I have not represented one as an executed command.
+After correcting the forwarding destination, I restarted the **SplunkForwarder** service to apply the changes. The screenshot below shows the Windows service restart/start process. The exact command used to correct the forwarding target is not captured, so I am not claiming a specific command was executed.
 
-I also reviewed the Domain Controller's local forwarder configuration files, including `inputs.conf`.
+![Restarting the SplunkForwarder Windows service](40_forwarder-service-restart.png)
+
+I also reviewed the Domain Controller's local forwarder configuration directory. The screenshot shows `inputs.conf` selected, but does not reveal its contents or the corrected `outputs.conf` settings.
 
 ![Domain Controller Universal Forwarder configuration files](33_domain-controller-inputs-conf.png)
 
@@ -459,7 +461,7 @@ After reviewing Windows logon types, I searched the `sharp-ad` index for success
 index=sharp-ad EventCode=4624
 ```
 
-The search returned **259 events** across the monitored Windows systems, confirming that successful authentication activity was available for investigation.
+The search returned **259 events** in the selected 24-hour window, confirming that successful authentication activity was available for investigation.
 
 ![Splunk Event ID 4624 search returning 259 events](37_successful-logon-events.png)
 
@@ -473,7 +475,7 @@ Next, I narrowed the search to successful authentication events with logon types
 index=sharp-ad EventCode=4624 (Logon_Type=7 OR Logon_Type=10)
 ```
 
-The refined query returned **9 events**, reducing the dataset to workstation unlocks and remote interactive logons for closer examination.
+The refined query returned **9 events** in the selected 24-hour window, reducing the dataset to workstation unlocks and remote interactive logons for closer examination. This screenshot shows the query and event count, not a completed alert.
 
 ![Splunk search filtering successful logons by types 7 and 10](39_filtered-logon-type-events.png)
 
@@ -490,7 +492,7 @@ During this phase, I:
 - Configured TCP port 9997 for forwarder ingestion.
 - Installed and configured Windows Universal Forwarders.
 - Configured Windows Security event log collection using `inputs.conf`.
-- Troubleshot an incorrect Domain Controller forwarding destination.
+- Investigated a Domain Controller forwarding destination mistake and restarted its forwarder service.
 - Verified successful ingestion into the `sharp-ad` index.
 - Confirmed that both Windows hosts appeared in Splunk search results.
 - Investigated Event ID 4624 and Windows logon types.

@@ -241,8 +241,6 @@ During this phase, I:
 
 ---
 
----
-
 ## Part 4: Splunk SIEM Deployment & Windows Event Log Integration
 
 ### Overview
@@ -553,15 +551,3 @@ During this phase, I:
 - Investigated successful Windows Event ID 4624 activity.
 - Filtered Windows logon events by Logon Types 7 and 10.
 - Identified the difference between workstation unlock events and Remote Desktop logons.
-
-### Next Steps
-
-The next phase will focus on building detection logic for successful Remote Desktop authentication.
-
-Planned work includes:
-
-1. Filtering Event ID 4624 specifically for **Logon Type 10**.
-2. Identifying the source network address associated with Remote Desktop sessions.
-3. Distinguishing expected administrative connections from suspicious external connections.
-4. Building a Splunk alert for successful unauthorized RDP authentication.
-5. Preparing the detection for integration with Shuffle SOAR and Slack.

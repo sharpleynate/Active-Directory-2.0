@@ -85,15 +85,15 @@ The instance dashboard shows all three machines and their operating systems. It 
 
 I created a Vultr firewall group named `sharp-AD-Project-2.0` to restrict administrative access. The configured inbound rules shown in the screenshot allow SSH (port 22) and RDP (port 3389) from a specified `/32` public IP, with a default deny rule for other inbound traffic.
 
-![Vultr firewall group inbound rules](02_firewall-rules.png)
+![Vultr firewall group inbound rules](Images/02_firewall-rules.png)
 
 I then checked the firewall group selection on the intended Domain Controller instance.
 
-![Domain Controller firewall group selection](03_windows-rdp.png)
+![Domain Controller firewall group selection](Images/03_windows-rdp.png)
 
 I also reviewed the firewall group selection on the Windows test machine.
 
-![Test Machine firewall group selection](06_test-machine-firewall.png)
+![Test Machine firewall group selection](Images/06_test-machine-firewall.png)
 
 **Note:** The firewall rule screenshot shows **zero attached instances** at that moment, while the instance settings screenshots show firewall groups selected. These screenshots document configuration steps at different times; they do not, by themselves, prove the rules were active on both machines simultaneously.
 
@@ -103,7 +103,7 @@ I accessed the Windows server through Remote Desktop Protocol (RDP) to perform c
 
 The following screenshot shows the established Windows desktop session.
 
-![Windows Remote Desktop session](04_domain-controller-firewall.png)
+![Windows Remote Desktop session](Images/04_domain-controller-firewall.png)
 
 ### Step 4: Configuring Private VPC Networking
 
@@ -111,15 +111,15 @@ I configured a Vultr VPC connection for internal communication between the serve
 
 The Windows instance's VPC settings show its assigned private address and network details.
 
-![Windows server VPC network assignment](05_vpc-network.png)
+![Windows server VPC network assignment](Images/05_vpc-network.png)
 
 I also checked the Ubuntu server's public IPv4 configuration while reviewing its network connectivity. **This screenshot shows its public network settings, not its VPC address.**
 
-![Ubuntu Splunk server public IPv4 configuration](07_splunk-network.png)
+![Ubuntu Splunk server public IPv4 configuration](Images/07_splunk-network.png)
 
 On the Windows test machine, I opened the secondary adapter's IPv4 properties and manually entered a private address and subnet mask for the VPC network.
 
-![Windows secondary adapter static IPv4 settings](08_windows-static-ip.png)
+![Windows secondary adapter static IPv4 settings](Images/08_windows-static-ip.png)
 
 ### Step 5: Troubleshooting Network Connectivity
 
@@ -127,11 +127,11 @@ I tested connectivity from the Ubuntu server using `ping`. The initial attempts 
 
 After adjusting the network configuration, the same terminal session showed successful ICMP replies from the previously unreachable private address.
 
-![Initial failed tests followed by successful connectivity](09_connectivity-troubleshooting.png)
+![Initial failed tests followed by successful connectivity](Images/09_connectivity-troubleshooting.png)
 
 I then ran another ping test to the other Windows server's private address and received successful ICMP replies.
 
-![Successful private IP ping from Ubuntu](10_connectivity-success.png)
+![Successful private IP ping from Ubuntu](Images/10_connectivity-success.png)
 
 These tests confirmed basic ICMP reachability to the two private targets shown. Additional service-level checks will be needed when Active Directory and Splunk are configured.
 
@@ -165,7 +165,7 @@ Using the **Add Roles and Features Wizard**, I selected the **Active Directory D
 
 AD DS provides centralized identity management, authentication, and access control for Windows domain environments.
 
-![Active Directory Domain Services role selected in Server Manager](11_ad-ds-role-installation.png)
+![Active Directory Domain Services role selected in Server Manager](Images/11_ad-ds-role-installation.png)
 
 ### Step 2: Promoting the Server to a Domain Controller
 
@@ -179,7 +179,7 @@ Because this was a new environment, I selected **Add a new forest** and configur
 
 This establishes the foundation for centralized authentication and domain management.
 
-![New Active Directory forest configuration using sharp.local](12_new-forest-sharp-local.png)
+![New Active Directory forest configuration using sharp.local](Images/12_new-forest-sharp-local.png)
 
 ### Step 3: Verifying the Active Directory Domain
 
@@ -196,7 +196,7 @@ The console displayed `sharp.local` and its default Active Directory containers,
 
 This confirmed that the Active Directory domain was accessible through the management console.
 
-![Active Directory Users and Computers showing sharp.local](13_active-directory-domain.png)
+![Active Directory Users and Computers showing sharp.local](Images/13_active-directory-domain.png)
 
 ### Step 4: Preparing the Windows Test Machine
 
@@ -208,7 +208,7 @@ The screenshot captures the machine before its domain membership was verified.
 
 For domain integration, the test machine must use DNS capable of resolving the `sharp.local` Active Directory domain, typically through the Domain Controller's DNS service.
 
-![Windows test machine computer name and workgroup settings](14_test-machine-system-properties.png)
+![Windows test machine computer name and workgroup settings](Images/14_test-machine-system-properties.png)
 
 ### Step 5: Troubleshooting Remote Desktop Authentication
 
@@ -220,7 +220,7 @@ This indicated that the attempted account did not have the necessary Remote Desk
 
 The error was related to remote logon permissions rather than establishing that the account password was incorrect.
 
-![Remote Desktop connection denied for domain user](15_rdp-authorization-error.png)
+![Remote Desktop connection denied for domain user](Images/15_rdp-authorization-error.png)
 
 ### Step 6: Configuring Remote Desktop User Permissions
 
@@ -230,7 +230,7 @@ From the domain location `sharp.local`, I selected the account **Jenny Smith (`J
 
 This step was intended to grant the domain account permission to establish an RDP session on the test machine.
 
-![Selecting Jenny Smith for Remote Desktop access](16_remote-desktop-user-permissions.png)
+![Selecting Jenny Smith for Remote Desktop access](Images/16_remote-desktop-user-permissions.png)
 
 The screenshot documents the user selection process. A successful login test is still needed to confirm that the permission change took effect.
 
@@ -265,7 +265,7 @@ Before installing Splunk, I prepared the Ubuntu server and created a simple Bash
 sudo apt update -y && sudo apt upgrade -y
 ```
 
-![Ubuntu update and upgrade script](18_ubuntu-update-script.png)
+![Ubuntu update and upgrade script](Images/18_ubuntu-update-script.png)
 
 ### Step 2: Downloading Splunk Enterprise
 
@@ -273,7 +273,7 @@ I downloaded the Splunk Enterprise Debian package directly from Splunk using `wg
 
 The package downloaded was Splunk Enterprise 10.6.1.1 for Linux AMD64.
 
-![Downloading Splunk Enterprise](17_splunk-enterprise-download.png)
+![Downloading Splunk Enterprise](Images/17_splunk-enterprise-download.png)
 
 After installing Splunk, the application files were available under:
 
@@ -289,7 +289,7 @@ Splunk Web uses TCP port **8000**.
 
 I first worked on adding an inbound TCP rule for port 8000 through the Vultr firewall configuration.
 
-![Vultr firewall rule configuration for port 8000](20_vultr-web-port-rule.png)
+![Vultr firewall rule configuration for port 8000](Images/20_vultr-web-port-rule.png)
 
 I also allowed port 8000 through the Ubuntu host firewall using UFW.
 
@@ -299,7 +299,7 @@ ufw allow 8000
 
 The screenshot below shows the Splunk installation directory and the successful addition of the UFW rule.
 
-![Splunk directory and UFW port 8000 rule](19_splunk-installation-files.png)
+![Splunk directory and UFW port 8000 rule](Images/19_splunk-installation-files.png)
 
 This allowed the Splunk web interface to be accessed remotely.
 
@@ -309,7 +309,7 @@ After accessing Splunk Enterprise through the web interface, I reviewed the admi
 
 I configured the interface time zone to **GMT (Greenwich Mean Time)** to keep timestamps consistent during event analysis.
 
-![Splunk administrator timezone preferences](21_splunk-web-firewall.png)
+![Splunk administrator timezone preferences](Images/21_splunk-web-firewall.png)
 
 ### Step 5: Installing the Splunk Add-on for Microsoft Windows
 
@@ -317,13 +317,13 @@ I installed the **Splunk Add-on for Microsoft Windows**.
 
 This add-on provides additional support for parsing and working with Windows event data inside Splunk.
 
-![Splunk Add-on for Microsoft Windows installed](22_splunk-web-preferences.png)
+![Splunk Add-on for Microsoft Windows installed](Images/22_splunk-web-preferences.png)
 
 ### Step 6: Enabling the Splunk Receiving Port
 
 To receive data from the Windows Universal Forwarders, I configured the Splunk server to listen on TCP port **9997**.
 
-![Splunk receiving configuration on port 9997](23_windows-addon-installed.png)
+![Splunk receiving configuration on port 9997](Images/23_windows-addon-installed.png)
 
 I then allowed port 9997 through the Ubuntu firewall.
 
@@ -331,7 +331,7 @@ I then allowed port 9997 through the Ubuntu firewall.
 ufw allow 9997
 ```
 
-![Ubuntu UFW rule allowing port 9997](29_initial-zero-events.png)
+![Ubuntu UFW rule allowing port 9997](Images/29_initial-zero-events.png)
 
 Port 9997 is used by the Universal Forwarders to send event data to the Splunk server.
 
@@ -341,7 +341,7 @@ I installed the **Splunk Universal Forwarder** on the Windows systems.
 
 The Universal Forwarder collects selected Windows event logs and sends them to the Splunk server for indexing and analysis.
 
-![Splunk Universal Forwarder installation](24_splunk-receiving-port.png)
+![Splunk Universal Forwarder installation](Images/24_splunk-receiving-port.png)
 
 After installation, the local configuration files were stored under:
 
@@ -349,7 +349,7 @@ After installation, the local configuration files were stored under:
 C:\Program Files\SplunkUniversalForwarder\etc\system\local\
 ```
 
-![Splunk Universal Forwarder local configuration directory](25_universal-forwarder-installation.png)
+![Splunk Universal Forwarder local configuration directory](Images/25_universal-forwarder-installation.png)
 
 ### Step 8: Configuring Windows Security Event Collection
 
@@ -367,7 +367,7 @@ index = sharp-ad
 disabled = false
 ```
 
-![Splunk Universal Forwarder inputs.conf configuration](26_forwarder-configuration-directory.png)
+![Splunk Universal Forwarder inputs.conf configuration](Images/26_forwarder-configuration-directory.png)
 
 This allowed authentication and other Windows Security events to be collected by the forwarder.
 
@@ -381,7 +381,7 @@ The screenshot shows the forwarder configured under:
 NT SERVICE\SplunkForwarder
 ```
 
-![SplunkForwarder Windows service Log On configuration](27_forwarder-security-input.png)
+![SplunkForwarder Windows service Log On configuration](Images/27_forwarder-security-input.png)
 
 ### Step 10: Troubleshooting Initial Event Ingestion
 
@@ -393,7 +393,7 @@ index=sharp-ad
 
 Initially, Splunk returned **0 events**.
 
-![Initial sharp-ad search returning zero events](28_forwarder-service-account.png)
+![Initial sharp-ad search returning zero events](Images/28_forwarder-service-account.png)
 
 This indicated that the forwarding pipeline was not yet working correctly.
 
@@ -403,7 +403,7 @@ After continuing the configuration and troubleshooting process, events began app
 
 The first successful search showed over **1,000 Windows Security events** being indexed.
 
-![First successful Windows event ingestion](30_first-ingested-events.png)
+![First successful Windows event ingestion](Images/30_first-ingested-events.png)
 
 This confirmed that the Windows Universal Forwarder was successfully communicating with the Splunk server.
 
@@ -425,7 +425,7 @@ instead of the Splunk server's VPC address:
 
 The screenshot below captures the Universal Forwarder configuration during this troubleshooting process.
 
-![Domain Controller Universal Forwarder configuration](31_splunk-9997-firewall.png)
+![Domain Controller Universal Forwarder configuration](Images/31_splunk-9997-firewall.png)
 
 After identifying the mistake, I corrected the forward server from the Domain Controller using PowerShell.
 
@@ -449,11 +449,11 @@ Restart-Service SplunkForwarder
 
 The Domain Controller's Universal Forwarder configuration directory contained the local configuration files, including `inputs.conf` and `outputs.conf`.
 
-![Domain Controller Universal Forwarder configuration directory](32_domain-controller-forwarder-setup.png)
+![Domain Controller Universal Forwarder configuration directory](Images/32_domain-controller-forwarder-setup.png)
 
 I then restarted the SplunkForwarder service.
 
-![Restarting the SplunkForwarder service](33_domain-controller-inputs-conf.png)
+![Restarting the SplunkForwarder service](Images/33_domain-controller-inputs-conf.png)
 
 This troubleshooting step was important because the forwarder must send events to the **Splunk server**, not to the machine generating the events.
 
@@ -468,7 +468,7 @@ More importantly, the `host` field contained two Windows systems:
 - `vultr-guest`
 - `sharp-ADDC01`
 
-![Splunk showing telemetry from both Windows hosts](34_both-hosts-verified.png)
+![Splunk showing telemetry from both Windows hosts](Images/34_both-hosts-verified.png)
 
 This confirmed that both the Windows test machine and Domain Controller were successfully forwarding Windows event logs into Splunk.
 
@@ -478,11 +478,11 @@ With telemetry successfully reaching Splunk, I began researching Windows authent
 
 Windows Security Event ID **4624** represents a successful account logon.
 
-![Windows Security Event ID 4624 reference](35_event-4624-reference.png)
+![Windows Security Event ID 4624 reference](Images/35_event-4624-reference.png)
 
 I also reviewed the different Windows logon types to understand which authentication events would be relevant to Remote Desktop activity.
 
-![Windows logon type reference](36_windows-logon-types.png)
+![Windows logon type reference](Images/36_windows-logon-types.png)
 
 Some important logon types include:
 
@@ -503,7 +503,7 @@ index=sharp-ad EventCode=4624
 
 The query returned **259 successful logon events**.
 
-![Splunk search for EventCode 4624](37_successful-logon-events.png)
+![Splunk search for EventCode 4624](Images/37_successful-logon-events.png)
 
 ### Step 16: Filtering Relevant Logon Types
 
@@ -515,7 +515,7 @@ index=sharp-ad EventCode=4624 (Logon_Type=7 OR Logon_Type=10)
 
 The filtered query returned **9 events**.
 
-![Splunk filtering Logon Types 7 and 10](38_logon-type-7-event-details.png)
+![Splunk filtering Logon Types 7 and 10](Images/38_logon-type-7-event-details.png)
 
 This reduced the number of events that needed to be reviewed and helped isolate activity related to workstation unlocks and remote interactive sessions.
 
@@ -531,7 +531,7 @@ Account Domain: SHARP
 Logon Type: 7
 ```
 
-![Windows Security event showing jsmith and Logon Type 7](39_filtered-logon-type-events.png)
+![Windows Security event showing jsmith and Logon Type 7](Images/39_filtered-logon-type-events.png)
 
 Logon Type 7 represents a workstation unlock.
 
@@ -578,7 +578,7 @@ I created a Shuffle workflow named `sharp-AD-Project-2.0` and added a webhook tr
 
 The webhook acts as the entry point for Splunk alert data and allows Shuffle to receive the JSON payload generated when the detection fires.
 
-![Shuffle webhook configuration](42_shuffle-webhook-configuration.png)
+![Shuffle webhook configuration](Images/42_shuffle-webhook-configuration.png)
 
 ### Step 2: Connecting the Splunk Alert to Shuffle
 
@@ -592,7 +592,7 @@ and added a **Webhook** trigger action using the URL generated by Shuffle.
 
 This connected the Splunk detection directly to the SOAR workflow so each triggered alert could be passed into Shuffle for additional processing.
 
-![Splunk alert configured with Shuffle webhook](43_splunk-alert-shuffle-webhook.png)
+![Splunk alert configured with Shuffle webhook](Images/43_splunk-alert-shuffle-webhook.png)
 
 ### Step 3: Verifying Splunk Events Inside Shuffle
 
@@ -600,7 +600,7 @@ After starting the Shuffle webhook, I triggered the Splunk detection and verifie
 
 The execution details showed the Splunk alert metadata and result fields being passed into Shuffle, including information from the detection search.
 
-![Shuffle receiving Splunk alert data](41_shuffle-received-splunk-alert.png)
+![Shuffle receiving Splunk alert data](Images/41_shuffle-received-splunk-alert.png)
 
 This confirmed that the **Splunk SIEM → Shuffle SOAR** connection was working.
 
@@ -610,7 +610,7 @@ Next, I created a custom Slack application named `sharp-soc-alerts` and enabled 
 
 The incoming webhook provides an HTTP endpoint that Shuffle can use to send security notifications into Slack.
 
-![Slack Incoming Webhooks configuration](44_slack-incoming-webhook.png)
+![Slack Incoming Webhooks configuration](Images/44_slack-incoming-webhook.png)
 
 ### Step 5: Adding Slack Notification Logic to Shuffle
 
@@ -618,15 +618,15 @@ Inside Shuffle, I added an HTTP action after the `Splunk-Alert` webhook.
 
 This HTTP action sends a POST request to the Slack Incoming Webhook whenever a Splunk alert enters the workflow.
 
-![Shuffle workflow with Slack HTTP notification](45_shuffle-slack-http-action.png)
+![Shuffle workflow with Slack HTTP notification](Images/45_shuffle-slack-http-action.png)
 
 I first tested the connection using a basic notification.
 
-![Slack test notification from Shuffle](46_slack-test-notification.png)
+![Slack test notification from Shuffle](Images/46_slack-test-notification.png)
 
 The Shuffle HTTP action returned an HTTP **200** response with a successful result, confirming that Slack accepted the webhook request.
 
-![Successful Slack webhook response in Shuffle](47_slack-webhook-success.png)
+![Successful Slack webhook response in Shuffle](Images/47_slack-webhook-success.png)
 
 ### Step 6: Building a Structured SOC Alert
 
@@ -640,7 +640,7 @@ The alert included available detection context such as:
 - Event count
 - Detection rule name
 
-![Structured SHARP SOC security alert in Slack](48_structured-soc-alert.png)
+![Structured SHARP SOC security alert in Slack](Images/48_structured-soc-alert.png)
 
 This provided a more readable notification for an analyst reviewing the event.
 
@@ -663,7 +663,7 @@ Slack Notification
 User Input
 ```
 
-![Shuffle workflow with User Input action](49_user-input-workflow.png)
+![Shuffle workflow with User Input action](Images/49_user-input-workflow.png)
 
 The User Input action sends an email to the analyst requesting review of the detection.
 
@@ -673,14 +673,14 @@ I successfully received the Shuffle approval email containing the security detec
 
 The email identified the detection rule and affected host and presented the event as requiring analyst review.
 
-![SHARP SOC analyst approval email](50_analyst-approval-email.png)
+![SHARP SOC analyst approval email](Images/50_analyst-approval-email.png)
 
 The analyst decision section included two options:
 
 - **TRUE:** Approve the proposed action
 - **FALSE:** Reject the proposed action
 
-![Analyst TRUE and FALSE decision options](51_analyst-decision-options.png)
+![Analyst TRUE and FALSE decision options](Images/51_analyst-decision-options.png)
 
 This confirmed that the workflow could deliver a security event to the analyst and collect a human decision through email.
 
@@ -698,7 +698,7 @@ Slack-Webhook-Notification
 User Input
 ```
 
-![Final Shuffle SOAR workflow](52_final-soar-workflow.png)
+![Final Shuffle SOAR workflow](Images/52_final-soar-workflow.png)
 
 This represents the completed automation path for the project.
 

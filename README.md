@@ -79,7 +79,7 @@ I deployed three virtual machines in Vultr's **Los Angeles region**:
 
 The instance dashboard shows all three machines and their operating systems. It also captures their running or stopped status at that point in the deployment.
 
-![Vultr instance list showing three deployed servers](01_vultr-instances.png)
+![Vultr instance list showing three deployed servers](images/01_vultr-instances.png)
 
 ### Step 2: Configuring Firewall Security
 

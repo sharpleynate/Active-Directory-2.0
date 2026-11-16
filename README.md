@@ -566,8 +566,6 @@ The completed workflow supports:
 - Slack security notifications
 - Email-based analyst approval or rejection
 
-Active Directory account disablement was **not implemented or verified** in this phase. The workflow currently stops at the analyst decision stage, with remediation left as future work.
-
 ### Step 1: Creating the Shuffle SOAR Workflow
 
 I created a Shuffle workflow named `sharp-AD-Project-2.0` and added a webhook trigger named `Splunk-Alert`.
@@ -661,7 +659,7 @@ User Input
 
 ![Shuffle workflow with User Input action](49_user-input-workflow.png)
 
-The User Input action sends an email to the analyst requesting review of the detection before any proposed remediation is performed.
+The User Input action sends an email to the analyst requesting review of the detection.
 
 ### Step 8: Testing the Analyst Approval Email
 
@@ -678,7 +676,7 @@ The analyst decision section included two options:
 
 ![Analyst TRUE and FALSE decision options](51_analyst-decision-options.png)
 
-The proposed response shown in the email is to disable the Active Directory account, but that remediation action was **not connected or executed** as part of the completed project.
+This confirmed that the workflow could deliver a security event to the analyst and collect a human decision through email.
 
 ### Step 9: Final SOAR Workflow
 
@@ -737,9 +735,6 @@ Shuffle User Input
         |
         v
 Analyst Approval / Rejection
-        |
-        v
-Future: Active Directory Remediation
 ```
 
 ### Part 5: Results
@@ -757,15 +752,7 @@ By the end of this phase, I had:
 - Added a User Input action for human-in-the-loop response.
 - Successfully received analyst approval emails.
 - Implemented TRUE and FALSE analyst decision options.
-- Completed the automated workflow through the analyst approval stage.
-
-### Project Status
-
-The completed project successfully demonstrates an end-to-end security monitoring and human-in-the-loop response pipeline using:
-
-**Windows → Splunk SIEM → Shuffle SOAR → Slack → Analyst Approval**
-
-The project does **not** automatically disable Active Directory accounts. Active Directory remediation remains a future extension that could be added after analyst approval.
+- Completed the automated workflow through analyst approval and rejection.
 
 ---
 
@@ -783,4 +770,4 @@ The completed environment includes:
 - Slack security notifications
 - Analyst approval and rejection workflows
 
-The result is a functional detection and response pipeline that collects Windows security events, identifies targeted authentication activity, sends alerts to external systems, and introduces analyst decision-making before remediation.
+The result is a functional detection and response pipeline that collects Windows security events, identifies targeted authentication activity, sends alerts through Shuffle and Slack, and introduces analyst decision-making through email-based approval and rejection.

@@ -3,7 +3,8 @@
 
 A hands-on cybersecurity project focused on building a simulated enterprise SOC environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection and automated incident response.
 
-![SOC Automation Architecture](https://github.com/user-attachments/assets/27d698bd-e8c9-496e-b7ec-db51e0abfcf7)
+![SOC Automation Architecture]<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/4954575c-3361-4f83-8972-68a1e12f6759" />
+
 
 ---
 

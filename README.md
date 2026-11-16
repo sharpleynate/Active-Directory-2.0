@@ -22,9 +22,9 @@ The environment consists of three virtual machines hosted on Vultr:
 
 | Virtual Machine | Operating System | Purpose |
 |---|---|---|
-| Domain Controller (`sharp-ADDC01`) | Windows Server 2025 Standard | Planned Active Directory users, accounts, and authentication management |
+| Domain Controller (`sharp-ADDC01`) | Windows Server 2022 Standard | Planned Active Directory users, accounts, and authentication management |
 | Splunk Server (`sharp-Splunk`) | Ubuntu Server 22.04 | Planned security log collection and analysis |
-| Test Machine | Windows Server 2022 Core | Simulated endpoint for testing |
+| Test Machine | Windows Server 2022 Standard | Simulated endpoint for testing |
 
 ### 🔄 Planned Security Workflow
 

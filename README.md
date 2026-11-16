@@ -1,10 +1,9 @@
 
 # Active Directory 2.0 — SOC Automation & Incident Response
 
-A hands-on cybersecurity project focused on building a simulated enterprise SOC environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection and automated incident response.
+A hands-on cybersecurity project focused on building a simulated enterprise SOC environment using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for security monitoring, threat detection, alerting, and analyst-driven incident response.
 
 <img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/4954575c-3361-4f83-8972-68a1e12f6759" />
-
 
 ---
 
@@ -12,9 +11,9 @@ A hands-on cybersecurity project focused on building a simulated enterprise SOC 
 
 ### Project Overview
 
-In this project, I'm building an Active Directory environment to simulate real-world cyberattacks, monitor suspicious authentication activity, and automate security responses.
+In this project, I built an Active Directory and SOC environment to simulate enterprise authentication activity, collect Windows security telemetry, detect suspicious logon events, and automate security notifications for analyst review.
 
-The goal is to understand how different security technologies work together in a SOC environment, from collecting security logs to detecting threats and responding to potential account compromises.
+The goal is to understand how different security technologies work together in a SOC environment, from collecting Windows event logs and detecting authentication activity to sending security alerts through Shuffle and Slack for analyst review.
 
 ### 🖥️ Lab Architecture
 
@@ -22,37 +21,43 @@ The environment consists of three virtual machines hosted on Vultr:
 
 | Virtual Machine | Operating System | Purpose |
 |---|---|---|
-| Domain Controller (`sharp-ADDC01`) | Windows Server 2022 Standard | Planned Active Directory users, accounts, and authentication management |
-| Splunk Server (`sharp-Splunk`) | Ubuntu Server 22.04 | Planned security log collection and analysis |
-| Test Machine | Windows Server 2022 Standard | Simulated endpoint for testing |
+| Domain Controller (`sharp-ADDC01`) | Windows Server 2022 Standard | Hosts Active Directory Domain Services and manages domain authentication |
+| Splunk Server (`sharp-Splunk`) | Ubuntu Server 22.04 | Collects, searches, and analyzes Windows security logs using Splunk Enterprise |
+| Test Machine | Windows Server 2022 Standard | Domain-joined endpoint used to generate and monitor authentication activity |
 
-### 🔄 Planned Security Workflow
+### 🔄 Security Workflow
 
-The project is designed to follow this incident response process:
+The project follows this SOC investigation process:
 
-1. **Attack Simulation:** An attacker attempts to authenticate to the Windows test machine.
-2. **Log Collection:** Authentication activity is forwarded to Splunk for monitoring.
-3. **Threat Detection:** Splunk identifies suspicious activity and generates a security alert.
-4. **SOAR Automation:** The alert triggers a Shuffle SOAR playbook and sends a notification to Slack.
-5. **Analyst Review:** Shuffle notifies a SOC analyst, who determines whether the affected account should be disabled.
-6. **Incident Response:** If approved, the domain account is disabled and a confirmation is sent to Slack. Otherwise, no automated remediation occurs.
+1. **Authentication Activity:** Windows systems generate Security event logs related to user authentication.
+2. **Log Collection:** Splunk Universal Forwarders send Windows Security logs to Splunk Enterprise.
+3. **Threat Detection:** Splunk monitors successful authentication activity using Event ID `4624` and relevant Windows logon types.
+4. **Security Alerting:** A Splunk detection alert sends event data to a Shuffle webhook.
+5. **SOAR Automation:** Shuffle receives and processes the Splunk alert through the configured workflow.
+6. **Slack Notification:** Shuffle sends a structured SOC security notification to Slack containing event details.
+7. **Analyst Review:** Shuffle sends an email requesting analyst review and approval or rejection.
+8. **Analyst Decision:** The SOC analyst responds through the email workflow with an approve or reject decision.
 
 ### 🎯 Project Objectives
 
-Through this project, I aim to develop hands-on experience with:
+Through this project, I developed hands-on experience with:
 
-- **Active Directory:** Identity and access management
-- **Splunk SIEM:** Security monitoring and threat detection
-- **Shuffle SOAR:** Security orchestration and automated incident response
-- **Slack:** Security alert notifications
-- **Windows Security Logs:** Authentication monitoring and investigation
-- **Cloud Networking:** Virtual machine deployment, firewall configuration, and private networking
+- **Active Directory:** Identity management, domain authentication, users, and domain-joined systems
+- **Splunk SIEM:** Security monitoring, Windows event ingestion, searching, filtering, and alerting
+- **Splunk Universal Forwarder:** Forwarding Windows Security logs to a centralized SIEM
+- **Shuffle SOAR:** Webhook-based security orchestration and workflow automation
+- **Slack:** Structured security alert notifications
+- **Windows Security Logs:** Authentication monitoring using Event ID `4624` and Windows logon types
+- **Cloud Networking:** Virtual machine deployment, firewall configuration, private VPC networking, and connectivity troubleshooting
+- **SOC Investigation:** Reviewing authentication telemetry and routing detections through an analyst approval workflow
 
 ### Part 1 Summary
 
-This phase focused on understanding the overall architecture, identifying the required technologies, and planning how the different systems will communicate.
+This phase focused on understanding the overall architecture, identifying the required technologies, and defining how the different systems would communicate.
 
-The next phase involves deploying and configuring the infrastructure needed to support the environment.
+The completed environment connects Active Directory, Windows endpoints, Splunk Enterprise, Shuffle SOAR, and Slack into a working security monitoring and analyst review pipeline.
+
+The following phases document the deployment, configuration, troubleshooting, SIEM integration, detection logic, and SOAR automation used to build the environment.
 
 ---
 

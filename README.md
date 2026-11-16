@@ -1,4 +1,4 @@
-# Active Directory 2.0 — SOC Automation & Incident Response
+# Active Directory 2.0 | SOC Automation & Incident Response
 
 Enterprise style SOC lab using Active Directory, Splunk SIEM, Shuffle SOAR, and Slack for threat detection, alerting, and analyst review.
 
